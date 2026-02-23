@@ -132,6 +132,63 @@ def main():
     for x in test_points:
         print(f"  f({x:2d}) = {f(x):10.4f},  f'({x:2d}) = {df(x):10.4f},  f''({x:2d}) = {d2f(x):10.4f}")
     
+    # 3. Minimizavimas trimis metodais
+    print(f"\n{'='*70}")
+    print("3. FUNKCIJOS MINIMIZAVIMAS")
+    print(f"{'='*70}")
+    
+    # Parametrai
+    l, r = 0, 10  # Intervalas
+    x0 = 5  # Pradinis taškas Niutono metodui
+    epsilon = 1e-4  # Tikslumas
+    
+    print(f"\nParametrai:")
+    print(f"  Intervalas: [{l}, {r}]")
+    print(f"  Tikslumas: ε = {epsilon}")
+    print(f"  Pradinis taškas (Newton): x₀ = {x0}")
+    
+    # 3.1 Intervalo dalijimo pusiau metodas
+    print(f"\n{'-'*70}")
+    print("3.1. INTERVALO DALIJIMO PUSIAU METODAS")
+    print(f"{'-'*70}")
+    x_min_bis, f_min_bis, iter_bis, history_bis = bisection_method(f, l, r, epsilon)
+    print(f"Rastas minimumas: x* = {x_min_bis:.6f}")
+    print(f"Funkcijos reikšmė: f(x*) = {f_min_bis:.6f}")
+    print(f"Iteracijų skaičius: {iter_bis}")
+    print(f"Galutinio intervalo ilgis: {history_bis[-1]['L']:.6e}")
+    
+    # 3.2 Auksinio pjūvio metodas
+    print(f"\n{'-'*70}")
+    print("3.2. AUKSINIO PJŪVIO METODAS")
+    print(f"{'-'*70}")
+    x_min_gold, f_min_gold, iter_gold, history_gold = golden_section_method(f, l, r, epsilon)
+    print(f"Rastas minimumas: x* = {x_min_gold:.6f}")
+    print(f"Funkcijos reikšmė: f(x*) = {f_min_gold:.6f}")
+    print(f"Iteracijų skaičius: {iter_gold}")
+    print(f"Galutinio intervalo ilgis: {history_gold[-1]['L']:.6e}")
+    
+    # 3.3 Niutono metodas
+    print(f"\n{'-'*70}")
+    print("3.3. NIUTONO METODAS")
+    print(f"{'-'*70}")
+    x_min_newton, f_min_newton, iter_newton, history_newton = newton_method(f, df, d2f, x0, epsilon)
+    print(f"Rastas minimumas: x* = {x_min_newton:.6f}")
+    print(f"Funkcijos reikšmė: f(x*) = {f_min_newton:.6f}")
+    print(f"Iteracijų skaičius: {iter_newton}")
+    if len(history_newton) >= 2:
+        last_step = abs(history_newton[-1]['x_i'] - history_newton[-2]['x_i'])
+        print(f"Paskutinio žingsnio ilgis: {last_step:.6e}")
+    
+    # Palyginimas
+    print(f"\n{'='*70}")
+    print("REZULTATŲ PALYGINIMAS")
+    print(f"{'='*70}")
+    print(f"{'Metodas':<30} {'x*':<12} {'f(x*)':<12} {'Iteracijos':<12}")
+    print(f"{'-'*70}")
+    print(f"{'Dalijimas pusiau':<30} {x_min_bis:<12.6f} {f_min_bis:<12.6f} {iter_bis:<12}")
+    print(f"{'Auksinis pjūvis':<30} {x_min_gold:<12.6f} {f_min_gold:<12.6f} {iter_gold:<12}")
+    print(f"{'Niutono metodas':<30} {x_min_newton:<12.6f} {f_min_newton:<12.6f} {iter_newton:<12}")
+    
     print(f"\n{'='*70}")
 
 

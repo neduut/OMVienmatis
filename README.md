@@ -191,6 +191,3 @@ pip install numpy matplotlib
 3. **f(x) = x² + sin(5x)** - Funkcija su trigonometrija
 4. **f(x) = eˣ - 3x** - Eksponentinė funkcija
 
-## Licencija
-
-Šis kodas sukurtas mokymo tikslais.
