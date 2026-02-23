@@ -200,7 +200,8 @@ def newton_method(
     d2f: Callable[[float], float],
     x0: float,
     epsilon: float = 1e-6,
-    max_iter: int = 1000
+    max_iter: int = 1000,
+    stop_on_gradient: bool = True
 ) -> Tuple[float, float, int, list]:
     """
     Niutono metodas optimizavimui.
@@ -230,8 +231,9 @@ def newton_method(
         df: Pirmoji išvestinė f'(x)
         d2f: Antroji išvestinė f''(x)
         x0: Pradinis taškas
-        epsilon: Tikslumo riba (|f'(x)| < epsilon arba |x_{i+1} - x_i| < epsilon)
+        epsilon: Tikslumo riba (|x_{i+1} - x_i| < epsilon; papildomai galima |f'(x)| < epsilon)
         max_iter: Maksimalus iteracijų skaičius
+        stop_on_gradient: Jei True, taikoma papildoma |f'(x)| < epsilon sąlyga
     
     Grąžina:
         x_min: Minimumo taškas
@@ -246,18 +248,6 @@ def newton_method(
         dfx = df(x)
         d2fx = d2f(x)
         
-        history.append({
-            'iteration': iteration + 1,
-            'x_i': x,
-            "f'(x_i)": dfx,
-            "f''(x_i)": d2fx
-        })
-        
-        # Patikrinimas, ar pasiektas tikslumas (gradientas artimas nuliui)
-        if abs(dfx) < epsilon:
-            f_min = f(x)
-            return x, f_min, iteration + 1, history
-        
         # Patikrinimas, ar antroji išvestinė nėra nulis
         if abs(d2fx) < 1e-10:
             print(f"Įspėjimas: Antroji išvestinė artima nuliui iteracijoje {iteration + 1}")
@@ -266,9 +256,24 @@ def newton_method(
         
         # Niutono formulė: x_{i+1} = x_i - f'(x_i) / f''(x_i)
         x_new = x - dfx / d2fx
+        step = abs(x_new - x)
+
+        history.append({
+            'iteration': iteration + 1,
+            'x_i': x,
+            'x_next': x_new,
+            'step': step,
+            "f'(x_i)": dfx,
+            "f''(x_i)": d2fx
+        })
+
+        # Patikrinimas, ar pasiektas tikslumas (gradientas artimas nuliui)
+        if stop_on_gradient and abs(dfx) < epsilon:
+            f_min = f(x)
+            return x, f_min, iteration + 1, history
         
         # Patikrinimas, ar pasikeitimas pakankamai mažas
-        if abs(x_new - x) < epsilon:
+        if step < epsilon:
             x = x_new
             f_min = f(x)
             return x, f_min, iteration + 1, history

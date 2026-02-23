@@ -4,6 +4,7 @@
 
 from optimization_methods import bisection_method, golden_section_method, newton_method
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def get_digits_from_student_number(student_number: str) -> tuple:
@@ -102,14 +103,13 @@ def create_objective_function(a: float, b: float):
 
 
 def main():
-    """Pagrindinis programos blokas"""
-    
+  
     print("="*70)
     print("1-ASIS LABORATORINIS DARBAS: VIENMAČIO OPTIMIZAVIMO METODAI")
     print("="*70)
     
     # Gauti studento numerį
-    student_number = input("\nĮveskite studento knygelės numerį: ").strip()
+    student_number = input("\nĮveskite studento knygelės numerį (2*1**ab): ").strip()
     
     # Apdoroti studento numerį
     a, b = process_student_number(student_number)
@@ -152,9 +152,11 @@ def main():
     print("3.1. INTERVALO DALIJIMO PUSIAU METODAS")
     print(f"{'-'*70}")
     x_min_bis, f_min_bis, iter_bis, history_bis = bisection_method(f, l, r, epsilon)
+    f_evals_bis = 3 * iter_bis
     print(f"Rastas minimumas: x* = {x_min_bis:.6f}")
     print(f"Funkcijos reikšmė: f(x*) = {f_min_bis:.6f}")
     print(f"Iteracijų skaičius: {iter_bis}")
+    print(f"Funkcijų skaičiavimų skaičius: {f_evals_bis}")
     print(f"Galutinio intervalo ilgis: {history_bis[-1]['L']:.6e}")
     
     # 3.2 Auksinio pjūvio metodas
@@ -162,33 +164,87 @@ def main():
     print("3.2. AUKSINIO PJŪVIO METODAS")
     print(f"{'-'*70}")
     x_min_gold, f_min_gold, iter_gold, history_gold = golden_section_method(f, l, r, epsilon)
+    f_evals_gold = 2 + iter_gold
     print(f"Rastas minimumas: x* = {x_min_gold:.6f}")
     print(f"Funkcijos reikšmė: f(x*) = {f_min_gold:.6f}")
     print(f"Iteracijų skaičius: {iter_gold}")
+    print(f"Funkcijų skaičiavimų skaičius: {f_evals_gold}")
     print(f"Galutinio intervalo ilgis: {history_gold[-1]['L']:.6e}")
     
     # 3.3 Niutono metodas
     print(f"\n{'-'*70}")
     print("3.3. NIUTONO METODAS")
     print(f"{'-'*70}")
-    x_min_newton, f_min_newton, iter_newton, history_newton = newton_method(f, df, d2f, x0, epsilon)
+    x_min_newton, f_min_newton, iter_newton, history_newton = newton_method(
+        f, df, d2f, x0, epsilon, stop_on_gradient=False
+    )
+    f_evals_newton = 1
     print(f"Rastas minimumas: x* = {x_min_newton:.6f}")
     print(f"Funkcijos reikšmė: f(x*) = {f_min_newton:.6f}")
     print(f"Iteracijų skaičius: {iter_newton}")
-    if len(history_newton) >= 2:
-        last_step = abs(history_newton[-1]['x_i'] - history_newton[-2]['x_i'])
-        print(f"Paskutinio žingsnio ilgis: {last_step:.6e}")
+    print(f"Funkcijų skaičiavimų skaičius: {f_evals_newton} (tik galutinei reikšmei)")
+    if history_newton:
+        last_step = history_newton[-1].get('step')
+        if last_step is not None:
+            print(f"Paskutinio žingsnio ilgis: {last_step:.6e}")
     
     # Palyginimas
     print(f"\n{'='*70}")
     print("REZULTATŲ PALYGINIMAS")
     print(f"{'='*70}")
-    print(f"{'Metodas':<30} {'x*':<12} {'f(x*)':<12} {'Iteracijos':<12}")
+    print(f"{'Metodas':<30} {'x*':<12} {'f(x*)':<12} {'Žingsniai':<12} {'f skaič.':<12}")
     print(f"{'-'*70}")
-    print(f"{'Dalijimas pusiau':<30} {x_min_bis:<12.6f} {f_min_bis:<12.6f} {iter_bis:<12}")
-    print(f"{'Auksinis pjūvis':<30} {x_min_gold:<12.6f} {f_min_gold:<12.6f} {iter_gold:<12}")
-    print(f"{'Niutono metodas':<30} {x_min_newton:<12.6f} {f_min_newton:<12.6f} {iter_newton:<12}")
+    print(f"{'Dalijimas pusiau':<30} {x_min_bis:<12.6f} {f_min_bis:<12.6f} {iter_bis:<12} {f_evals_bis:<12}")
+    print(f"{'Auksinis pjūvis':<30} {x_min_gold:<12.6f} {f_min_gold:<12.6f} {iter_gold:<12} {f_evals_gold:<12}")
+    print(f"{'Niutono metodas':<30} {x_min_newton:<12.6f} {f_min_newton:<12.6f} {iter_newton:<12} {f_evals_newton:<12}")
     
+    # 4. Vizualizacija
+    print(f"\n{'='*70}")
+    print("4. VIZUALIZACIJA")
+    print(f"{'='*70}")
+
+    # Surenkame bandymo taškus
+    points_bis = []
+    for h in history_bis:
+        points_bis.extend([h['l'], h['x_1'], h['x_m'], h['x_2'], h['r']])
+
+    points_gold = []
+    for h in history_gold:
+        points_gold.extend([h['l'], h['x_1'], h['x_2'], h['r']])
+
+    points_newton = [h['x_i'] for h in history_newton]
+    for h in history_newton:
+        if 'x_next' in h:
+            points_newton.append(h['x_next'])
+
+    # Funkcijos grafikas
+    xs = np.linspace(l, r, 1000)
+    ys = [f(x) for x in xs]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(xs, ys, 'b-', linewidth=2, label='f(x)')
+
+    # Bandymo taškai
+    plt.scatter(points_bis, [f(x) for x in points_bis], s=15, alpha=0.6, label='Dalijimas pusiau')
+    plt.scatter(points_gold, [f(x) for x in points_gold], s=15, alpha=0.6, label='Auksinis pjūvis')
+    plt.scatter(points_newton, [f(x) for x in points_newton], s=25, alpha=0.8, label='Niutono metodas')
+
+    # Rasti minimumai
+    plt.scatter([x_min_bis], [f_min_bis], c='red', s=60, marker='x', label='Minimumas (dalijimas pusiau)')
+    plt.scatter([x_min_gold], [f_min_gold], c='green', s=60, marker='x', label='Minimumas (auksinis pjūvis)')
+    plt.scatter([x_min_newton], [f_min_newton], c='purple', s=60, marker='x', label='Minimumas (Niutono metodas)')
+
+    plt.title('Tikslo funkcija ir bandymo taškai')
+    plt.xlabel('x')
+    plt.ylabel('f(x)')
+    plt.grid(True, alpha=0.3)
+    plt.legend(fontsize=9)
+    plt.tight_layout()
+    plt.savefig('vizualizacija.png', dpi=150)
+    plt.close()
+
+    print("Vizualizacija išsaugota faile: vizualizacija.png")
+
     print(f"\n{'='*70}")
 
 
