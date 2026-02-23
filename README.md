@@ -7,7 +7,7 @@
 Metodas iteratyviai mažina paieškos intervalą dalijant jį į dalis. Pradiniame intervale $[l, r]$ surandamas vidurys $x_m = (l + r)/2$ ir du taškai $x_1 = l + L/4$, $x_2 = r - L/4$, kur $L = r - l$. Pagal funkcijų reikšmes atmetama intervalo dalis. Algoritmas sustabdomas, kai intervalo ilgis pasidaro mažesnis nei nurodytas tikslumas $\varepsilon$.
 
 ```python
-def bisection_method(f, l, r, epsilon=1e-6):
+def int_dalijimo_pusiau_metodas(f, l, r, epsilon=1e-6):
     for iteration in range(1000):
         L = r - l
         x_m = (l + r) / 2
@@ -33,14 +33,14 @@ def bisection_method(f, l, r, epsilon=1e-6):
     return x_min, f(x_min), 1000, history
 ```
 
-Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `bisection_method`.
+Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `int_dalijimo_pusiau_metodas`.
 
 ### 1.1.2. Auksinio pjūvio algoritmo realizacija
 
 Metodas remiasi auksinio pjūvio santykiu $\tau = (\sqrt{5} - 1)/2 \approx 0.618$. Šis santykis naudojamas intervalui mažinti optimaliu būdu, todėl metodas konverguoja greičiau nei paprastas dalijimas pusiau. Algoritmas naudoja du tašus bandymui — $x_1$ ir $x_2$ — ir pagal funkcijų reikšmes pašalina nereikalingą intervalo dalį.
 
 ```python
-def golden_section_method(f, l, r, epsilon=1e-6):
+def auksinio_pjuvio_metodas(f, l, r, epsilon=1e-6):
     tau = (np.sqrt(5) - 1) / 2  # ≈ 0.618
     
     L = r - l
@@ -71,14 +71,14 @@ def golden_section_method(f, l, r, epsilon=1e-6):
     return (l + r) / 2, f((l + r) / 2), 1000, history
 ```
 
-Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `golden_section_method`.
+Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `auksinio_pjuvio_metodas`.
 
 ### 1.1.3. Niutono metodo realizacija
 
 Metodas naudoja pirmąją ir antrąją funkcijos išvestines. Iteracine formule: $x_{i+1} = x_i - f'(x_i) / f''(x_i)$. Ši formulė gaunama pritaikius Teiloro eilutę ir remiasi kvadratine funkcijos aproksimacija. Metodas turi labai greitą konvergenciją, bet reikalauja išvestinių skaičiavimo ir yra jautrus pradinio taško pasirinkimui.
 
 ```python
-def newton_method(f, df, d2f, x0, epsilon=1e-6, max_iter=1000):
+def niutono_metodas(f, df, d2f, x0, epsilon=1e-6, max_iter=1000):
     x = x0
     
     for iteration in range(max_iter):
@@ -99,7 +99,7 @@ def newton_method(f, df, d2f, x0, epsilon=1e-6, max_iter=1000):
     return x, f(x), max_iter, history
 ```
 
-Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `newton_method`.
+Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `niutono_metodas`.
 
 ## 1.2. Aprašykite tikslo funkciją f(x) = (x²−a)²/b−1
 
@@ -141,11 +141,17 @@ Palyginimas atliekamas pagal šiuos kriterijus:
 - **Žingsnių skaičius** — iteracijų, kurios atliktos iki konvergencijos, kiekis
 - **Funkcijų skaičiavimų skaičius** — bendras funkcijos ir išvestinių skaičiavimų kiekis
 
-Šios metrikos rodo, jog labiausiai efektyvus yra Niutono metodas — jis naudoja mažiausiai žingsnių ir skaičiavimų. Tačiau jis reikalauja, kad būtų žinomos funkcijos išvestinės. Intervalo dalijimo ir auksinio pjūvio metodai yra patikimesni, nes nepriklauso nuo išvestinių žinojimo.
+Šios duomenys rodo, jog labiausiai efektyvus yra Niutono metodas — jis naudoja mažiausiai žingsnių ir skaičiavimų. Tačiau jis reikalauja, kad būtų žinomos funkcijos išvestinės. Intervalo dalijimo ir auksinio pjūvio metodai yra patikimesni, nes nepriklauso nuo išvestinių žinojimo.
 
 ## Išvados
 
-1. **Metodų palyginimas rodo skirtingą efektyvumą**: Niutono metodas pasižymi kvadratine konvergencija, o dalijimo metodai — linijine.
-2. **Praktinis taikymas**: Priklausomai nuo uždavinio, pasirenkamas labiausiai tinkamas metodas.
-3. **Vizualizacija padeda suprasti**: Grafikai aiškiai rodo metodų paieškos trajektorijas ir jų skirtumus.
+1. **Pritaikius intervalo dalijimo metodą**, gauta, kad jam prireikė 18 iteracijų ir 54 funkcijų skaičiavimų minimumo radimui. Šis metodas yra patikimas, nes nereikalauja išvestinių, bet yra santykinai lėtas.
+
+2. **Pritaikius auksinio pjūvio metodą**, pasiektas minimumas greičiau nei dalijimo metodu — per 25 iteracijas, bet su mažiau skaičiavimų (27). Tai rodo, jog optimalus intervalo dalijimas pagreitina konvergenciją.
+
+3. **Pritaikius Niutono metodą**, gautas žymiai greitesnis rezultatas — minimumas rastas vos per 6 iteracijas. Šis metodas naudoja kvadratinę konvergenciją, todėl artėjimas prie minimumo eksponentiškai pagreitėja.
+
+4. **Lyginant visus tris rezultatus**, nustatyta, jog visi metodai surado tą patį teisingą minimumą $x^* \approx 2.8284$, bet skyrėsi pasiekto rezultato greitumu. Tai parodo, jog nėra universalaus geriausio metodo — pasirinkimas priklauso nuo turimos informacijos ir reikalavimų.
+
+5. Atlikus tyrimą galima teigti, jog kai funkciją sunku diferencijuoti arba nežinomos išvestinės, tikslinga naudoti intervalo dalijimo arba auksinio pjūvio metodus. Kai išvestinės yra žinomos ir lengvai skaičiuojamos, Niutono metodas yra geriausias pasirinkimas dėl greičiausios konvergencijos.
 
