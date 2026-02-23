@@ -1,32 +1,26 @@
-"""
-Vienmačio optimizavimo metodų testai ir demonstracija
-"""
-
 from optimization_methods import bisection_method, golden_section_method, newton_method
 import numpy as np
 
 
 def print_results(method_name: str, x_min: float, f_min: float, iterations: int):
-    """Atspausdina optimizavimo rezultatus."""
+    """spausdina optimizavimo rezultatus"""
     print(f"\n{'='*60}")
     print(f"{method_name}")
     print(f"{'='*60}")
-    print(f"Rastas minimumas: x* = {x_min:.8f}")
-    print(f"Funkcijos reikšmė: f(x*) = {f_min:.8f}")
-    print(f"Iteracijų skaičius: {iterations}")
+    print(f"rastas minimumas: x* = {x_min:.8f}")
+    print(f"funkcijos reiksme: f(x*) = {f_min:.8f}")
+    print(f"iteraciju skaicius: {iterations}")
     print(f"{'='*60}")
 
 
-# ============================================================================
 # PAGRINDINIAI TESTAI
-# ============================================================================
 
 def test_basic_quadratic():
-    """Pagrindinis testas su kvadratine funkcija f(x) = (x - 2)² + 1"""
+    """PGR testas su kvadratine funkcija f(x) = (x - 2)² + 1"""
     print("="*70)
-    print("VIENMAČIO OPTIMIZAVIMO METODŲ DEMONSTRACIJA")
-    print("Testinė funkcija: f(x) = (x - 2)² + 1")
-    print("Tikrasis minimumas: x* = 2, f(x*) = 1")
+    print("VIENMACIO OPTIMIZAVIMO METODU DEMONSTRACIJA")
+    print("test funkcija: f(x) = (x - 2)² + 1")
+    print("tikrasis minimumas: x* = 2, f(x*) = 1")
     print("="*70)
     
     def f(x):
@@ -38,17 +32,17 @@ def test_basic_quadratic():
     def d2f(x):
         return 2
     
-    # Parametrai
+    # parametrai
     l, r = 0, 5
     x0 = 0
     epsilon = 1e-6
     
-    # 1. Intervalo dalijimo pusiau metodas
+    # 1. int dalijimo pusiau metodas
     x_min_bis, f_min_bis, iter_bis, history_bis = bisection_method(f, l, r, epsilon)
     print_results("INTERVALO DALIJIMO PUSIAU METODAS", x_min_bis, f_min_bis, iter_bis)
     
     if history_bis:
-        print("\nPirmosios iteracijos detali informacija:")
+        print("\npirmosios iteracijos detali informacija:")
         h = history_bis[0]
         print(f"  l = {h['l']:.2f}; r = {h['r']:.2f}; L = {h['L']:.2f}; x_m = {h['x_m']:.2f}")
         print(f"  x_1 = l + L/4 = {h['l']:.2f} + {h['L']:.2f}/4 = {h['x_1']:.2f}")
@@ -63,7 +57,7 @@ def test_basic_quadratic():
     x_min_newton, f_min_newton, iter_newton, history_newton = newton_method(f, df, d2f, x0, epsilon)
     print_results("NIUTONO METODAS", x_min_newton, f_min_newton, iter_newton)
     
-    # Palyginimas
+    # palyginimas
     print(f"\n{'='*60}")
     print("METODŲ PALYGINIMAS")
     print(f"{'='*60}")
@@ -75,12 +69,10 @@ def test_basic_quadratic():
     print(f"{'='*60}")
 
 
-# ============================================================================
 # PAVYZDŽIAI IŠ SKAIDRIŲ
-# ============================================================================
 
 def test_bisection_from_slides():
-    """Intervalo dalijimo pusiau pavyzdys iš skaidrių: f(x) = (100-x)², x ∈ [60, 150]"""
+    """Intervalo dalijimo pusiau pavyzdys: f(x) = (100-x)², x ∈ [60, 150]"""
     print("\n\n" + "="*70)
     print("INTERVALO DALIJIMO PUSIAU - PAVYZDYS IŠ SKAIDRIŲ")
     print("min f(x) = (100-x)², x ∈ [60, 150]")
@@ -110,7 +102,7 @@ def test_bisection_from_slides():
 
 
 def test_golden_section_from_slides():
-    """Auksinio pjūvio pavyzdys iš skaidrių (normalizuotas): f(w) = (40-90w)², w ∈ [0, 1]"""
+    """Auksinio pjūvio pavyzdys (normalizuotas): f(w) = (40-90w)², w ∈ [0, 1]"""
     print("\n\n" + "="*70)
     print("AUKSINIO PJŪVIO - PAVYZDYS IŠ SKAIDRIŲ")
     print("min f(w) = (40-90w)², w ∈ [0, 1]")
@@ -149,15 +141,13 @@ def test_golden_section_from_slides():
             print(f"  f(w_1) < f(w_2), todėl intervalas ({h['x_2']:.3f}; {h['r']:.3f}] atmetamas")
 
 
-# ============================================================================
 # VISI TESTAI
-# ============================================================================
 
 if __name__ == "__main__":
-    # Pagrindinis testas
+    # pgr testas
     test_basic_quadratic()
     
-    # Pavyzdžiai iš skaidrių
+    # pvz is skaidriu
     test_bisection_from_slides()
     test_golden_section_from_slides()
     

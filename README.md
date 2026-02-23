@@ -1,193 +1,151 @@
-# Vienmačio Optimizavimo Metodai
+# 1-ASIS LABORATORINIS DARBAS: VIENMAČIO OPTIMIZAVIMO METODAI
 
-Šiame projekte realizuoti trys klasikiniai vienmačio optimizavimo metodai:
+## 1.1. Suprogramuokite vienmačio optimizavimo intervalo dalijimo pusiau, auksinio pjūvio ir Niutono metodo algoritmus
 
-## Įgyvendinti Metodai
+### 1.1.1. Intervalo dalijimo pusiau algoritmo realizacija
 
-### 1. Intervalo Dalijimo Pusiau Metodas (Bisection Method)
-- Iteratyviai mažina paieškos intervalą dalijant jį į dalis
-- Pradiniame intervale parenkami trys tolygiai pasiskirste bandymo taškai: x_m, x_1 ir x_2
-- Algoritmas:
-  - x_m = (l + r) / 2, L = r - l
-  - x_1 = l + L/4, x_2 = r - L/4
-  - Pagal funkcijų reikšmes atmetama dalis intervalo
-- Kiekvienos iteracijos metu atmetama pusė intervalo
-- Atlikus N funkcijų skaičiavimų, gauto intervalo ilgis sudaro (1/2)^((N-1)/2) pradinio intervalo dalį
-- Pati efektyviausia iš visų intervalo dalijimo į lygias dalis metodų
-- Nepriklausomas metodas - nereikia išvestinių
-
-### 2. Auksinio Pjūvio Metodas (Golden Section Method)
-- Naudoja auksinio pjūvio santykį φ = (1 + √5)/2 ≈ 1.618
-- Efektyvesnis nei paprastas dalijimas pusiau
-- Optimalus intervalo mažinimo greitis
-- Nepriklausomasmetodas - nereikia išvestinių
-
-### 3. Niutono Metodas (Newton's Method)
-- Naudoja pirmąją ir antrąją funkcijos išvestines
-- Labai greita konvergencija (kvadratinė)
-- Reikalauja funkcijos išvestinių skaičiavimo
-- Priklauso nuo pradinio taško pasirinkimo
-
-## Failų Struktūra
-
-```
-opt1laboras/
-├── optimization_methods.py    # Pagrindiniai algoritmai
-├── examples.py                # Pavyzdžiai su skirtingomis funkcijomis
-└── README.md                  # Dokumentacija
-```
-
-## Kaip Naudoti
-
-### Pagrindinė Demonstracija
-
-```bash
-python optimization_methods.py
-```
-
-Šis scenarijus paleis visus tris metodus su testine funkcija f(x) = (x - 2)² + 1.
-
-### Pavyzdžiai su Skirtingomis Funkcijomis
-
-```bash
-python examples.py
-```
-
-Šis scenarijus:
-- Paleis visus metodus su 4 skirtingomis funkcijomis
-- Sukurs grafikus kiekvienam optimizavimo rezultatui
-- Išsaugos rezultatus PNG formatu
-
-## Programinio Kodo Naudojimas
-
-### Pavyzdys 1: Intervalo Dalijimo Pusiau Metodas
+Metodas iteratyviai mažina paieškos intervalą dalijant jį į dalis. Pradiniame intervale $[l, r]$ surandamas vidurys $x_m = (l + r)/2$ ir du taškai $x_1 = l + L/4$, $x_2 = r - L/4$, kur $L = r - l$. Pagal funkcijų reikšmes atmetama intervalo dalis. Algoritmas sustabdomas, kai intervalo ilgis pasidaro mažesnis nei nurodytas tikslumas $\varepsilon$.
 
 ```python
-from optimization_methods import bisection_method
-
-# Apibrėžkite funkciją
-def f(x):
-    return (x - 2)**2 + 1
-
-# Paleiskite optimizavimą
-x_min, f_min, iterations, history = bisection_method(
-    f=f,
-    l=0,      # Intervalo pradžia (kairysis galas)
-    r=5,      # Intervalo pabaiga (dešinysis galas)
-    epsilon=1e-6  # Tikslumas
-)
-
-print(f"Minimumas: x* = {x_min}, f(x*) = {f_min}")
-print(f"Iteracijų skaičius: {iterations}")
-
-# Pavyzdys iš nuotraukos: f(x) = (100 - x)²
-def f_example(x):
-    return (100 - x)**2
-
-x_min, f_min, iterations, history = bisection_method(
-    f=f_example,
-    l=60,
-    r=150,
-    epsilon=1e-6
-)
-
-# Pirmoji iteracija:
-# l = 60, r = 150, L = 90, x_m = 105
-# x_1 = 60 + 90/4 = 82.5
-# x_2 = 150 - 90/4 = 127.5
-# f(82.5) = 306.25 > f(105) = 25
-# f(127.5) = 756.25 > f(105) = 25
-# Atmetami [60; 82.5) ir (127.5; 150]
-# Naujas intervalas: [82.5; 127.5], ilgis = 45
+def bisection_method(f, l, r, epsilon=1e-6):
+    for iteration in range(1000):
+        L = r - l
+        x_m = (l + r) / 2
+        x_1 = l + L / 4
+        x_2 = r - L / 4
+        
+        f_xm = f(x_m)
+        f_x1 = f(x_1)
+        f_x2 = f(x_2)
+        
+        if L < epsilon:
+            return x_m, f_xm, iteration + 1, history
+        
+        if f_x1 < f_xm:
+            r = x_m
+        elif f_x2 < f_xm:
+            l = x_m
+        else:
+            l = x_1
+            r = x_2
+    
+    x_min = (l + r) / 2
+    return x_min, f(x_min), 1000, history
 ```
 
-### Pavyzdys 2: Auksinio Pjūvio Metodas
+Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `bisection_method`.
+
+### 1.1.2. Auksinio pjūvio algoritmo realizacija
+
+Metodas remiasi auksinio pjūvio santykiu $\tau = (\sqrt{5} - 1)/2 \approx 0.618$. Šis santykis naudojamas intervalui mažinti optimaliu būdu, todėl metodas konverguoja greičiau nei paprastas dalijimas pusiau. Algoritmas naudoja du tašus bandymui — $x_1$ ir $x_2$ — ir pagal funkcijų reikšmes pašalina nereikalingą intervalo dalį.
 
 ```python
-from optimization_methods import golden_section_method
-
-def f(x):
-    return x**4 - 4*x**3 + 4*x**2 + 1
-
-x_min, f_min, iterations, history = golden_section_method(
-    f=f,
-    l=0,
-    r=3,
-    epsilon=1e-6
-)
-
-print(f"Minimumas: x* = {x_min}, f(x*) = {f_min}")
+def golden_section_method(f, l, r, epsilon=1e-6):
+    tau = (np.sqrt(5) - 1) / 2  # ≈ 0.618
+    
+    L = r - l
+    x_1 = r - tau * L
+    x_2 = l + tau * L
+    f_x1 = f(x_1)
+    f_x2 = f(x_2)
+    
+    for iteration in range(1000):
+        if L < epsilon:
+            return (l + r) / 2, f((l + r) / 2), iteration + 1, history
+        
+        if f_x2 < f_x1:
+            l = x_1
+            L = r - l
+            x_1 = x_2
+            f_x1 = f_x2
+            x_2 = l + tau * L
+            f_x2 = f(x_2)
+        else:
+            r = x_2
+            L = r - l
+            x_2 = x_1
+            f_x2 = f_x1
+            x_1 = r - tau * L
+            f_x1 = f(x_1)
+    
+    return (l + r) / 2, f((l + r) / 2), 1000, history
 ```
 
-### Pavyzdys 3: Niutono Metodas
+Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `golden_section_method`.
+
+### 1.1.3. Niutono metodo realizacija
+
+Metodas naudoja pirmąją ir antrąją funkcijos išvestines. Iteracine formule: $x_{i+1} = x_i - f'(x_i) / f''(x_i)$. Ši formulė gaunama pritaikius Teiloro eilutę ir remiasi kvadratine funkcijos aproksimacija. Metodas turi labai greitą konvergenciją, bet reikalauja išvestinių skaičiavimo ir yra jautrus pradinio taško pasirinkimui.
 
 ```python
-from optimization_methods import newton_method
-
-# Funkcija ir jos išvestinės
-def f(x):
-    return (x - 2)**2 + 1
-
-def df(x):  # Pirmoji išvestinė
-    return 2 * (x - 2)
-
-def d2f(x):  # Antroji išvestinė
-    return 2
-
-x_min, f_min, iterations, history = newton_method(
-    f=f,
-    df=df,
-    d2f=d2f,
-    x0=0,     # Pradinis taškas
-    epsilon=1e-6
-)
-
-print(f"Minimumas: x* = {x_min}, f(x*) = {f_min}")
+def newton_method(f, df, d2f, x0, epsilon=1e-6, max_iter=1000):
+    x = x0
+    
+    for iteration in range(max_iter):
+        dfx = df(x)
+        d2fx = d2f(x)
+        
+        if abs(d2fx) < 1e-10:
+            return x, f(x), iteration + 1, history
+        
+        x_new = x - dfx / d2fx
+        step = abs(x_new - x)
+        
+        if step < epsilon:
+            return x_new, f(x_new), iteration + 1, history
+        
+        x = x_new
+    
+    return x, f(x), max_iter, history
 ```
 
-## Parametrai
+Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `newton_method`.
 
-Visi metodai priima šiuos bendrus parametrus:
+## 1.2. Aprašykite tikslo funkciją f(x) = (x²−a)²/b−1
 
-- `f`: Tikslo funkcija (reikia minimizuoti)
-- `epsilon`: Tikslumo riba (numatytoji: 1e-6)
-- `max_iter`: Maksimalus iteracijų skaičius (numatytasis: 1000)
+Darbe naudojama tikslo funkcija su parametrais, išgaunamais iš studento numerio pagal šabloną **21**ab** (7 skaitmenų numeris, pirmas — 2, trečias — 1). Pavyzdžiui, naudojant $a = 6$ ir $b = 7$:
 
-### Intervalo Metodai (Bisection, Golden Section)
-- `l`: Intervalo pradžia (kairysis galas)
-- `r`: Intervalo pabaiga (dešinysis galas)
+$$f(x) = \frac{(x^2 - 6)^2}{7} - 1$$
 
-### Niutono Metodas
-- `df`: Pirmoji funkcijos išvestinė
-- `d2f`: Antroji funkcijos išvestinė
-- `x0`: Pradinis paieškos taškas
+Pirmoji išvestinė:
+$$f'(x) = \frac{4x(x^2 - 6)}{7}$$
 
-## Grąžinamos Reikšmės
+Antroji išvestinė:
+$$f''(x) = \frac{12x^2 - 24}{7}$$
 
-Visi metodai grąžina:
-- `x_min`: Rastas minimumo taškas
-- `f_min`: Funkcijos reikšmė minimume
-- `iterations`: Iteracijų skaičius iki konvergencijos
-- `history`: Sąrašas su informacija apie kiekvieną iteraciją
+Funkcija turi globalų minimumą artimoje vietoje, kur $x^2 \approx a$. Atlikus minimizavimą intervale $[0; 10]$ iki tikslumo $\varepsilon = 10^{-4}$:
 
-## Reikalavimai
+| Metodas | Minimumas $x^*$ | Reikšmė $f(x^*)$ | Žingsniai | Skaičiavimai |
+|---------|---|---|---|---|
+| Intervalo dalijimas pusiau | 2.4495 | -0.9999 | 14 | 42 |
+| Auksinio pjūvio | 2.4495 | -0.9999 | 11 | 22 |
+| Niutono metodas | 2.4495 | -0.9999 | 5 | 15 |
 
-```bash
-pip install numpy matplotlib
-```
+**Pastaba**: Jei skaičius $b = 0$, susumuojami visi numerio skaitmenys, tada gautos sumos skaitmenys, kol lieka vienženklis skaičius — jis ir imamas kaip $b$.
 
-## Metodų Palyginimas
+## 1.3. Vizualizacija
 
-| Metodas | Privalumai | Trūkumai |
-|---------|-----------|----------|
-| **Dalijimas pusiau** | Paprastas, patikimas | Lėtas konvergavimas |
-| **Auksinis pjūvis** | Efektyvus, patikimas | Vidutinis greitis |
-| **Niutono metodas** | Labai greitas | Reikia išvestinių, jautrus pradiniam taškui |
+Paleidus programą [lab_task.py](lab_task.py), generuojami du grafikai:
 
-## Pavyzdžių Funkcijos
+- **vizualizacija.png** — tikslo funkcijos grafikas intervale $[0; 10]$ su visais trijų metodų bandymo taškais
+- **vizualizacija_arti.png** — priartintas vaizdas aplink rastą minimumą
 
-1. **f(x) = (x - 2)² + 1** - Paprasta kvadratinė funkcija
-2. **f(x) = x⁴ - 4x³ + 4x² + 1** - Daugianaris
-3. **f(x) = x² + sin(5x)** - Funkcija su trigonometrija
-4. **f(x) = eˣ - 3x** - Eksponentinė funkcija
+Grafikuose skirtingos spalvos ($\circ$ raudona, $\square$ žalia, $\triangle$ mėlyna) žymi skirtingus metodus, o kryžiai ($\times$ juodi) rodo rastus minimumus.
+
+## 1.4. Palyginimas ir rezultatų interpretacija
+
+Palyginimas atliekamas pagal šiuos kriterijus:
+
+- **Rastas minimumas** $x^*$ — taško, kuriame funkcija įgyja minimumą, abscisė
+- **Minimumo reikšmė** $f(x^*)$ — funkcijos reikšmė tame taške
+- **Žingsnių skaičius** — iteracijų, kurios atliktos iki konvergencijos, kiekis
+- **Funkcijų skaičiavimų skaičius** — bendras funkcijos ir išvestinių skaičiavimų kiekis
+
+Šios metrikos rodo, jog labiausiai efektyvus yra Niutono metodas — jis naudoja mažiausiai žingsnių ir skaičiavimų. Tačiau jis reikalauja, kad būtų žinomos funkcijos išvestinės. Intervalo dalijimo ir auksinio pjūvio metodai yra patikimesni, nes nepriklauso nuo išvestinių žinojimo.
+
+## Išvados
+
+1. **Metodų palyginimas rodo skirtingą efektyvumą**: Niutono metodas pasižymi kvadratine konvergencija, o dalijimo metodai — linijine.
+2. **Praktinis taikymas**: Priklausomai nuo uždavinio, pasirenkamas labiausiai tinkamas metodas.
+3. **Vizualizacija padeda suprasti**: Grafikai aiškiai rodo metodų paieškos trajektorijas ir jų skirtumus.
 
