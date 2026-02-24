@@ -6,7 +6,7 @@
 
 Metodas iteratyviai mažina paieškos intervalą dalijant jį į dalis. Pradiniame intervale $[l, r]$ surandamas vidurys $x_m = (l + r)/2$ ir du taškai $x_1 = l + L/4$, $x_2 = r - L/4$, kur $L = r - l$. Pagal funkcijų reikšmes atmetama intervalo dalis. Algoritmas sustabdomas, kai intervalo ilgis pasidaro mažesnis nei nurodytas tikslumas $\varepsilon$.
 
-**⚠️ Svarbu**: Intervalų atmetimo metodams reikalinga **unimadalumas** (vienas minimumas intervale). Mūsų tikslo funkcija $f(x) = \frac{(x^2 - a)^2}{b} - 1$ turi du simetriškus minimumus ties $x = \pm\sqrt{a}$. Pasirinkus intervalą $[0; 10]$, lieka tik vienas minimumas ties $x = +\sqrt{a} \approx 2.449$, o funkcija intervale yra unimodali - tai garantuoja algoritmų konvergenciją.
+**⚠️ Svarbu**: Intervalų atmetimo metodams reikalingas **unimodalumas** (vienas minimumas intervale). Mūsų tikslo funkcija $f(x) = \frac{(x^2 - a)^2}{b} - 1$ turi du simetriškus minimumus ties $x = \pm\sqrt{a}$. Pasirinkus intervalą $[0; 10]$, lieka tik vienas minimumas ties $x = +\sqrt{a} \approx 2.449$, o funkcija intervale yra unimodali - tai garantuoja algoritmų konvergenciją.
 
 ```python
 def int_dalijimo_pusiau_metodas(f, l, r, epsilon=1e-6):
@@ -150,7 +150,7 @@ Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `ni
 
 ## 1.2. Aprašykite tikslo funkciją f(x) = (x²−a)²/b−1
 
-Darbe naudojama tikslo funkcija su parametrais, išgaunamais iš studento numerio pagal šabloną **21**ab** (7 skaitmenų numeris, pirmas — 2, trečias — 1). Pavyzdžiui, naudojant $a = 6$ ir $b = 7$:
+Darbe naudojama tikslo funkcija su parametrais, išgaunamais iš studento numerio pagal šabloną 2*1**ab (7 skaitmenų numeris, antrasis — *, trečias — 1). Pavyzdžiui, naudojant $a = 6$ ir $b = 7$:
 
 $$f(x) = \frac{(x^2 - 6)^2}{7} - 1$$
 
@@ -164,9 +164,9 @@ Funkcija turi globalų minimumą artimoje vietoje, kur $x^2 \approx a$. Atlikus 
 
 | Metodas | Minimumas $x^*$ | Reikšmė $f(x^*)$ | Žingsniai | Skaičiavimai |
 |---------|---|---|---|---|
-| Intervalo dalijimas pusiau | 2.4495 | -0.9999 | 14 | 42 |
-| Auksinio pjūvio | 2.4495 | -0.9999 | 11 | 22 |
-| Niutono metodas | 2.4495 | -0.9999 | 5 | 15 |
+| Intervalo dalijimas pusiau | 2.449493 | -1.000000 | 17 | 52 |
+| Auksinio pjūvio | 2.449462 | -1.000000 | 24 | 27 |
+| Niutono metodas | 2.449490 | -1.000000 | 6 | 13 |
 
 **Pastaba**: Jei skaičius $b = 0$, susumuojami visi numerio skaitmenys, tada gautos sumos skaitmenys, kol lieka vienženklis skaičius — jis ir imamas kaip $b$.
 
@@ -192,13 +192,18 @@ Palyginimas atliekamas pagal šiuos kriterijus:
 
 ## Išvados
 
-1. **Pritaikius intervalo dalijimo metodą**, gauta, kad jam prireikė 18 iteracijų ir 54 funkcijų skaičiavimų minimumo radimui. Šis metodas yra patikimas, nes nereikalauja išvestinių, bet yra santykinai lėtas.
+1. **Pritaikius intervalo dalijimo metodą**, gauta, kad jam prireikė **17 iteracijų ir 52 funkcijų skaičiavimų** minimumo radimui. Šis metodas yra patikimas, nes nereikalauja išvestinių, bet yra santykinai lėtas. Kiekvienoje iteracijoje skaičiuojamos trys funkcijos reikšmės, todėl funkcijų skaičiavimų skaičius auga proporcingai iteracijų skaičiui.
 
-2. **Pritaikius auksinio pjūvio metodą**, pasiektas minimumas greičiau nei dalijimo metodu — per 25 iteracijas, bet su mažiau skaičiavimų (27). Tai rodo, jog optimalus intervalo dalijimas pagreitina konvergenciją.
+2. **Pritaikius auksinio pjūvio metodą**, pasiektas minimumas su **24 iteracijomis, bet tik 27 funkcijų skaičiavimais**. Tai rodo, jog auksinio pjūvio santykis ($\tau \approx 0.618$) efektyviai sumažina reikalingą iteracijų skaičių. Metodas per iteraciją skaičiuoja tik vieną naują funkcijos reikšmę, todėl yra ekonomiškas.
 
-3. **Pritaikius Niutono metodą**, gautas žymiai greitesnis rezultatas — minimumas rastas vos per 6 iteracijas. Šis metodas naudoja kvadratinę konvergenciją, todėl artėjimas prie minimumo eksponentiškai pagreitėja.
+3. **Pritaikius Niutono metodą**, gautas žymiai greitesnis rezultatas — minimumas rastas vos per **6 iteracijas su 13 skaičiavimų** (2 išvestinės per iteraciją + 1 galutiniam f(x)). Šis metodas naudoja kvadratinę konvergenciją, todėl artėjimas prie minimumo eksponentiškai pagreitėja. 
 
-4. **Lyginant visus tris rezultatus**, nustatyta, jog visi metodai surado tą patį teisingą minimumą $x^* \approx 2.8284$, bet skyrėsi pasiekto rezultato greitumu. Tai parodo, jog nėra universalaus geriausio metodo — pasirinkimas priklauso nuo turimos informacijos ir reikalavimų.
+4. **Lyginant visus tris rezultatus**, nustatyta, jog visi metodai surado tą patį teisingą minimumą $x^* \approx 2.449$, su f(x*) = -1.0. Tai patvirtina, jog visos implementacijos teisingos. 
+   - **Pagal iteracijų skaičių** (mažiau = greičiau): Niuton (6) > Dalijimas (17) > Auksinis (24)
+   - **Pagal funkcijų skaičiavimų kiekį** (mažiau = ekonomiškiau): Niuton (13) > Auksinis (27) > Dalijimas (52)
 
-5. Atlikus tyrimą galima teigti, jog kai funkciją sunku diferencijuoti arba nežinomos išvestinės, tikslinga naudoti intervalo dalijimo arba auksinio pjūvio metodus. Kai išvestinės yra žinomos ir lengvai skaičiuojamos, Niutono metodas yra geriausias pasirinkimas dėl greičiausios konvergencijos.
+5. **Atlikus tyrimą galima teigti**, jog:
+   - Kai funkciją sunku diferencijuoti arba nežinomos išvestinės, tikslinga naudoti **auksinio pjūvio metodą** (geriausias iš intervalų atmetimo metodų, efektyvus 27 skaičiavimai su 24 iteracijomis).
+   - Kai išvestinės yra žinomos ir lengvai skaičiuojamos, **Niutono metodas** yra geriausias pasirinkimas dėl greičiausios konvergencijos (vos 6 iteracijos).
+   - **Intervalo dalijimo metodas** yra universalus ir patikimas, bet lėtesnis, tinkamas, kai reikalingas paprastas ir stabilus metodas be išvestinių naudojimo.
 
