@@ -6,7 +6,7 @@
 
 Metodas iteratyviai mažina paieškos intervalą dalijant jį į dalis. Pradiniame intervale $[l, r]$ surandamas vidurys $x_m = (l + r)/2$ ir du taškai $x_1 = l + L/4$, $x_2 = r - L/4$, kur $L = r - l$. Pagal funkcijų reikšmes atmetama intervalo dalis. Algoritmas sustabdomas, kai intervalo ilgis pasidaro mažesnis nei nurodytas tikslumas $\varepsilon$.
 
-**⚠️ Svarbu**: Intervalų atmetimo metodams reikalingas **unimodalumas** (vienas minimumas intervale). Mūsų tikslo funkcija $f(x) = \frac{(x^2 - a)^2}{b} - 1$ turi du simetriškus minimumus ties $x = \pm\sqrt{a}$. Pasirinkus intervalą $[0; 10]$, lieka tik vienas minimumas ties $x = +\sqrt{a} \approx 2.449$, o funkcija intervale yra unimodali - tai garantuoja algoritmų konvergenciją.
+Intervalų atmetimo metodams reikalingas **unimodalumas** (vienas minimumas intervale). Mūsų tikslo funkcija $f(x) = \frac{(x^2 - a)^2}{b} - 1$ turi du simetriškus minimumus ties $x = \pm\sqrt{a}$. Pasirinkus intervalą $[0; 10]$, lieka tik vienas minimumas ties $x = +\sqrt{a} \approx 2.449$, o funkcija intervale yra unimodali - tai garantuoja algoritmų konvergenciją.
 
 ```python
 def int_dalijimo_pusiau_metodas(f, l, r, epsilon=1e-6):
