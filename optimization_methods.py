@@ -15,7 +15,7 @@ def int_dalijimo_pusiau_metodas(
     r: float,
     epsilon: float = 1e-6,
     max_iter: int = 1000
-) -> Tuple[float, float, int, list]:
+) -> Tuple[float, float, int, int, list]:
     """
     Intervalo dalijimo pusiau metodas optimizavimui.
     
@@ -38,13 +38,23 @@ def int_dalijimo_pusiau_metodas(
         x_min: minimumo taskas
         f_min: funkcijos reiksme minimume
         iterations: iteraciju skaicius
+        func_calls: bendras funkcijos skaiciavimo skaicius
         history: iteraciju istorija
     """
     history = []
+    func_calls = 0
     
     for iteration in range(max_iter):
         # intervalo ilgis
         L = r - l
+        
+        # tikrina ar pasiektas tikslumas PRIEŠ skaičiuojant
+        if L < epsilon:
+            x_min = (l + r) / 2
+            f_min = f(x_min)
+            func_calls += 1
+            return x_min, f_min, iteration, func_calls, history
+        
         # intervalo vidurio taskas
         x_m = (l + r) / 2
         # du papildomi bandymo taskai
@@ -54,6 +64,7 @@ def int_dalijimo_pusiau_metodas(
         f_xm = f(x_m)
         f_x1 = f(x_1)
         f_x2 = f(x_2)
+        func_calls += 3
         
         history.append({
             'iteration': iteration + 1,
@@ -68,30 +79,23 @@ def int_dalijimo_pusiau_metodas(
             'f(x_2)': f_x2
         })
         
-        # tikrina ar pasiektas tikslumas
-        if L < epsilon:
-            x_min = x_m
-            f_min = f_xm
-            return x_min, f_min, iteration + 1, history
-        
         # intervalo mazinimas
         if f_x1 < f_xm:
-            # 3.1: atmetamas (x_m, r], keiciant r = x_m
-            # 3.2: intervalo centru tampa x_1, tad keiciama x_m = x_1
+            # atmetamas (x_m, r], keiciant r = x_m
             r = x_m
         elif f_x2 < f_xm:
-            # 4.1: atmetamas [l, x_m), keiciant l = x_m
-            # 4.2: intervalo centru tampa x_2, tad keiciama x_m = x_2
+            # atmetamas [l, x_m), keiciant l = x_m
             l = x_m
         else:
-            # 5.1: atmetami intervalai [l, x_1] ir (x_2, r]
+            # atmetami intervalai [l, x_1] ir (x_2, r]
             l = x_1
             r = x_2
     
     # jei nepasiektas tikslumas per max_iter iteraciju
     x_min = (l + r) / 2
     f_min = f(x_min)
-    return x_min, f_min, max_iter, history
+    func_calls += 1
+    return x_min, f_min, max_iter, func_calls, history
 
 
 def auksinio_pjuvio_metodas(
@@ -100,23 +104,18 @@ def auksinio_pjuvio_metodas(
     r: float,
     epsilon: float = 1e-6,
     max_iter: int = 1000
-) -> Tuple[float, float, int, list]:
+) -> Tuple[float, float, int, int, list]:
     """
-    Auksinio pjuvio metodas optimizavimui.
+    Auksinio pjuvio metodas optimizavimui - pagal skaidres.
     
     Algoritmas:
     1. L = r - l, x_1 = r - τL ir x_2 = l + τL, skaiciuojame f(x_1) ir f(x_2)
-    2. jei f(x_2) < f(x_1), tai atmetamas [l, x_1), l = x_1, x_1 = x_2
-    3. priesingu atveju atmetamas (x_2, r], r = x_2, x_2 = x_1
-    4. skaiciuojama viena tikslo funkcijos reiksme iteracijoj
+    2. while L > epsilon:
+       - jei f(x_2) < f(x_1): atmetamas [l, x_1), l = x_1, x_1 = x_2, f(x_1) = f(x_2)
+       - priesingu atveju: atmetamas (x_2, r], r = x_2, x_2 = x_1, f(x_2) = f(x_1)
+       - atnaujinti L ir naujus bandymo taskus
     
-    Sustojimo salyga:
-    - pagal fiksuota funkcijos bandymu skaiciu (max_iter), arba
-    - pagal paieskos intervalo ilgi (L < epsilon)
-    
-    Tolesnis bandymo taskas gaunamas pagal formules:
-    - w = r - τ^N arba w = l + τ^N
-    - priklausomai kuris pointervals buvo atmestas ankstesnej iteracijoj
+    Sustojimo salyga: L <= epsilon
     
     Parametrai:
         f: tikslo funkcija
@@ -129,64 +128,58 @@ def auksinio_pjuvio_metodas(
         x_min: minimumo taskas
         f_min: funkcijos reiksme minimume
         iterations: iteraciju skaicius
+        func_calls: bendras funkcijos skaiciavimo skaicius
         history: iteraciju istorija
     """
-    # fibonacio skaicius 
     tau = (np.sqrt(5) - 1) / 2  # ≈ 0.618
-    
+    func_calls = 0
+    iterations = 0
     history = []
     
-    # pradinis int ir taskai
     L = r - l
     x_1 = r - tau * L
     x_2 = l + tau * L
-    f_x1 = f(x_1)
-    f_x2 = f(x_2)
+    f_1 = f(x_1)
+    f_2 = f(x_2)
+    func_calls += 2
     
-    for iteration in range(max_iter):
+    while L > epsilon and iterations < max_iter:
+        iterations += 1
+        
         history.append({
-            'iteration': iteration + 1,
+            'iteration': iterations,
             'l': l,
             'r': r,
             'L': L,
             'x_1': x_1,
             'x_2': x_2,
-            'f(x_1)': f_x1,
-            'f(x_2)': f_x2
+            'f(x_1)': f_1,
+            'f(x_2)': f_2,
+            'func_calls': func_calls
         })
         
-        # tikrina ar pasiektas tikslumas
-        if L < epsilon:
-            x_min = (l + r) / 2
-            f_min = f(x_min)
-            return x_min, f_min, iteration + 1, history
-        
-        # int mazinimas
-        if f_x2 < f_x1:
-            # 2. atmetamas [l, x_1) atliekant keitima l = x_1, L = r - l
+        if f_2 < f_1:
             l = x_1
-            L = r - l
-            # 2.2 kairiuoju tasku tampa ankstesnis desinysis taskas x_1 = x_2
             x_1 = x_2
-            f_x1 = f_x2
-            # 2.3 naujasis desinysis taskas x_2 = l + τL, skaiciuojam f(x_2)
-            x_2 = l + tau * L
-            f_x2 = f(x_2)
-        else:
-            # 3. atmetamas (x_2, r] atliekant keitima r = x_2, L = r - l
-            r = x_2
+            f_1 = f_2
             L = r - l
-            # 3.2 desiniuoju tasku tampa ankstesnis kairysis taskas x_2 = x_1
+            x_2 = l + tau * L
+            f_2 = f(x_2)
+            func_calls += 1
+        else:
+            r = x_2
             x_2 = x_1
-            f_x2 = f_x1
-            # 3.3 naujasis kairysis taskas x_1 = r - τL, skaiciuojame f(x_1)
+            f_2 = f_1
+            L = r - l
             x_1 = r - tau * L
-            f_x1 = f(x_1)
+            f_1 = f(x_1)
+            func_calls += 1
     
-    # jei nepasiektas tikslumas per max_iter iteraciju
     x_min = (l + r) / 2
     f_min = f(x_min)
-    return x_min, f_min, max_iter, history
+    func_calls += 1
+    
+    return x_min, f_min, iterations, func_calls, history
 
 
 def niutono_metodas(
@@ -195,9 +188,8 @@ def niutono_metodas(
     d2f: Callable[[float], float],
     x0: float,
     epsilon: float = 1e-6,
-    max_iter: int = 1000,
-    stop_on_gradient: bool = True
-) -> Tuple[float, float, int, list]:
+    max_iter: int = 1000
+) -> Tuple[float, float, int, int, list]:
     """
     Niutono metodas optimizavimui.
     
@@ -222,32 +214,37 @@ def niutono_metodas(
     - bendru atveju formule taikoma iteratyviai
     
     Parametrai:
-        f: tikslo funkcija (naudojama tik galutinei reiksmei)
+        f: tikslo funkcija
         df: pirmoji isvestinė f'(x)
         d2f: antroji isvestinė f''(x)
         x0: pradinis taskas
-        epsilon: tikslumo riba (|x_{i+1} - x_i| < epsilon; papildomai galima |f'(x)| < epsilon)
+        epsilon: tikslumo riba - algoritmas sustabdomas kai |x_{i+1} - x_i| < epsilon
         max_iter: maksimalus iteraciju skaicius
-        stop_on_gradient: jei True, taikoma papildoma |f'(x)| < epsilon salyga
     
     Grazina:
         x_min: minimumo taskas
         f_min: funkcijos reiksme minimume
         iterations: iteraciju skaicius
+        func_calls: bendras funkcijos (isvestiniu) skaiciavimo skaicius
         history: iteraciju istorija
+    
+    Pastaba:
+    Funkcijų skaičiavimams priskiriami f'(x) ir f''(x) įverčiai, nes pats metodas 
+    sprendžia f'(x)=0. Funkcija f(x) skaičiuojama tik galutinei minimumo reikšmei.
     """
     x = x0
     history = []
+    func_calls = 0
     
     for iteration in range(max_iter):
         dfx = df(x)
+        func_calls += 1
         d2fx = d2f(x)
+        func_calls += 1
         
         # patikrinimas, ar antroji isvestine nera nulis
         if abs(d2fx) < 1e-10:
-            print(f"Įspėjimas: Antroji išvestinė artima nuliui iteracijoje {iteration + 1}")
-            f_min = f(x)
-            return x, f_min, iteration + 1, history
+            raise ValueError("Antroji išvestinė artima nuliui iteracijoje {}".format(iteration + 1))
         
         # Niutono formule: x_{i+1} = x_i - f'(x_i) / f''(x_i)
         x_new = x - dfx / d2fx
@@ -262,19 +259,16 @@ def niutono_metodas(
             "f''(x_i)": d2fx
         })
 
-        # patikrinimas, ar pasiektas tikslumas (gradientas artimas nuliui)
-        if stop_on_gradient and abs(dfx) < epsilon:
-            f_min = f(x)
-            return x, f_min, iteration + 1, history
-        
         # patikrinimas, ar pasikeitimas pakankamai mazas
         if step < epsilon:
             x = x_new
             f_min = f(x)
-            return x, f_min, iteration + 1, history
+            func_calls += 1
+            return x, f_min, iteration + 1, func_calls, history
         
         x = x_new
     
     f_min = f(x)
-    return x, f_min, max_iter, history
+    func_calls += 1
+    return x, f_min, max_iter, func_calls, history
 

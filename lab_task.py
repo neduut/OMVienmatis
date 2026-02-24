@@ -145,38 +145,33 @@ def main():
     print(f"\n{'-'*70}")
     print("3.1. INTERVALO DALIJIMO PUSIAU METODAS")
     print(f"{'-'*70}")
-    x_min_bis, f_min_bis, iter_bis, history_bis = int_dalijimo_pusiau_metodas(f, l, r, epsilon)
-    f_evals_bis = 3 * iter_bis
+    x_min_bis, f_min_bis, iter_bis, f_evals_bis, history_bis = int_dalijimo_pusiau_metodas(f, l, r, epsilon)
     print(f"Rastas minimumas: x* = {x_min_bis:.6f}")
     print(f"Funkcijos reikšmė: f(x*) = {f_min_bis:.6f}")
     print(f"Iteracijų skaičius: {iter_bis}")
     print(f"Funkcijų skaičiavimų skaičius: {f_evals_bis}")
-    print(f"Galutinio intervalo ilgis: {history_bis[-1]['L']:.6e}")
     
     # 3.2 auksinio pjūvio metodas
     print(f"\n{'-'*70}")
     print("3.2. AUKSINIO PJŪVIO METODAS")
     print(f"{'-'*70}")
-    x_min_gold, f_min_gold, iter_gold, history_gold = auksinio_pjuvio_metodas(f, l, r, epsilon)
-    f_evals_gold = 2 + iter_gold
+    x_min_gold, f_min_gold, iter_gold, f_evals_gold, history_gold = auksinio_pjuvio_metodas(f, l, r, epsilon)
     print(f"Rastas minimumas: x* = {x_min_gold:.6f}")
     print(f"Funkcijos reikšmė: f(x*) = {f_min_gold:.6f}")
     print(f"Iteracijų skaičius: {iter_gold}")
     print(f"Funkcijų skaičiavimų skaičius: {f_evals_gold}")
-    print(f"Galutinio intervalo ilgis: {history_gold[-1]['L']:.6e}")
     
     # 3.3 niutono metodas
     print(f"\n{'-'*70}")
     print("3.3. NIUTONO METODAS")
     print(f"{'-'*70}")
-    x_min_newton, f_min_newton, iter_newton, history_newton = niutono_metodas(
-        f, df, d2f, x0, epsilon, stop_on_gradient=False
+    x_min_newton, f_min_newton, iter_newton, f_evals_newton, history_newton = niutono_metodas(
+        f, df, d2f, x0, epsilon
     )
-    f_evals_newton = 1
     print(f"Rastas minimumas: x* = {x_min_newton:.6f}")
     print(f"Funkcijos reikšmė: f(x*) = {f_min_newton:.6f}")
     print(f"Iteracijų skaičius: {iter_newton}")
-    print(f"Funkcijų skaičiavimų skaičius: {f_evals_newton} (tik galutinei reikšmei)")
+    print(f"Funkcijų skaičiavimų skaičius: {f_evals_newton} (f'(x) ir f''(x) + f(x) galutinei reikšmei)")
     if history_newton:
         last_step = history_newton[-1].get('step')
         if last_step is not None:

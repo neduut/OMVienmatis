@@ -6,10 +6,24 @@
 
 Metodas iteratyviai mažina paieškos intervalą dalijant jį į dalis. Pradiniame intervale $[l, r]$ surandamas vidurys $x_m = (l + r)/2$ ir du taškai $x_1 = l + L/4$, $x_2 = r - L/4$, kur $L = r - l$. Pagal funkcijų reikšmes atmetama intervalo dalis. Algoritmas sustabdomas, kai intervalo ilgis pasidaro mažesnis nei nurodytas tikslumas $\varepsilon$.
 
+**⚠️ Svarbu**: Intervalų atmetimo metodams reikalinga **unimadalumas** (vienas minimumas intervale). Mūsų tikslo funkcija $f(x) = \frac{(x^2 - a)^2}{b} - 1$ turi du simetriškus minimumus ties $x = \pm\sqrt{a}$. Pasirinkus intervalą $[0; 10]$, lieka tik vienas minimumas ties $x = +\sqrt{a} \approx 2.449$, o funkcija intervale yra unimodali - tai garantuoja algoritmų konvergenciją.
+
 ```python
 def int_dalijimo_pusiau_metodas(f, l, r, epsilon=1e-6):
+    func_calls = 0
+    history = []
+    
     for iteration in range(1000):
         L = r - l
+        
+        # tikrina ar pasiektas tikslumas PRIEŠ skaičiuojant
+        if L < epsilon:
+            x_min = (l + r) / 2
+            f_min = f(x_min)
+            func_calls += 1
+            return x_min, f_min, iteration, func_calls, history
+        
+        # tik tada skaičiuojame
         x_m = (l + r) / 2
         x_1 = l + L / 4
         x_2 = r - L / 4
@@ -17,9 +31,9 @@ def int_dalijimo_pusiau_metodas(f, l, r, epsilon=1e-6):
         f_xm = f(x_m)
         f_x1 = f(x_1)
         f_x2 = f(x_2)
+        func_calls += 3
         
-        if L < epsilon:
-            return x_m, f_xm, iteration + 1, history
+        history.append({...})
         
         if f_x1 < f_xm:
             r = x_m
@@ -30,48 +44,65 @@ def int_dalijimo_pusiau_metodas(f, l, r, epsilon=1e-6):
             r = x_2
     
     x_min = (l + r) / 2
-    return x_min, f(x_min), 1000, history
+    f_min = f(x_min)
+    func_calls += 1
+    return x_min, f_min, 1000, func_calls, history
 ```
 
-Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `int_dalijimo_pusiau_metodas`.
+**Grąžina**: `(x_min, f_min, iterations, func_calls, history)`
 
 ### 1.1.2. Auksinio pjūvio algoritmo realizacija
 
-Metodas remiasi auksinio pjūvio santykiu $\tau = (\sqrt{5} - 1)/2 \approx 0.618$. Šis santykis naudojamas intervalui mažinti optimaliu būdu, todėl metodas konverguoja greičiau nei paprastas dalijimas pusiau. Algoritmas naudoja du tašus bandymui — $x_1$ ir $x_2$ — ir pagal funkcijų reikšmes pašalina nereikalingą intervalo dalį.
+Metodas remiasi auksinio pjūvio santykiu $\tau = (\sqrt{5} - 1)/2 \approx 0.618$. Šis santykis naudojamas intervalui mažinti optimaliu būdu, todėl metodas konverguoja greičiau nei paprastas dalijimas pusiau. Algoritmas naudoja du tašus bandymui — $x_1$ ir $x_2$ — ir pagal funkcijų reikšmes pašalina nereikalingą intervalo dalį. Iteracija laikomas vienas intervalo siaurinimo žingsnis.
 
 ```python
 def auksinio_pjuvio_metodas(f, l, r, epsilon=1e-6):
     tau = (np.sqrt(5) - 1) / 2  # ≈ 0.618
+    func_calls = 0
+    iterations = 0
+    history = []
     
+    # Pradinė inicializacija
     L = r - l
     x_1 = r - tau * L
     x_2 = l + tau * L
-    f_x1 = f(x_1)
-    f_x2 = f(x_2)
+    f_1 = f(x_1)
+    f_2 = f(x_2)
+    func_calls += 2
     
-    for iteration in range(1000):
-        if L < epsilon:
-            return (l + r) / 2, f((l + r) / 2), iteration + 1, history
+    # while ciklas - sustojimas pagal L > epsilon
+    while L > epsilon and iterations < 1000:
+        iterations += 1
         
-        if f_x2 < f_x1:
+        history.append({...})
+        
+        if f_2 < f_1:
             l = x_1
-            L = r - l
             x_1 = x_2
-            f_x1 = f_x2
+            f_1 = f_2
+            L = r - l
             x_2 = l + tau * L
-            f_x2 = f(x_2)
+            f_2 = f(x_2)
+            func_calls += 1
         else:
             r = x_2
-            L = r - l
             x_2 = x_1
-            f_x2 = f_x1
+            f_2 = f_1
+            L = r - l
             x_1 = r - tau * L
-            f_x1 = f(x_1)
+            f_1 = f(x_1)
+            func_calls += 1
     
-    return (l + r) / 2, f((l + r) / 2), 1000, history
+    x_min = (l + r) / 2
+    f_min = f(x_min)
+    func_calls += 1
+    
+    return x_min, f_min, iterations, func_calls, history
 ```
 
-Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `auksinio_pjuvio_metodas`.
+**Grąžina**: `(x_min, f_min, iterations, func_calls, history)`
+
+**Pastaba**: Auksinio pjūvio metodas naudoja `while L > epsilon` ciklą ir efektyviai skaičiuoja tik **po 1 naujo f() per iteraciją**.
 
 ### 1.1.3. Niutono metodo realizacija
 
@@ -80,24 +111,40 @@ Metodas naudoja pirmąją ir antrąją funkcijos išvestines. Iteracine formule:
 ```python
 def niutono_metodas(f, df, d2f, x0, epsilon=1e-6, max_iter=1000):
     x = x0
+    func_calls = 0
+    history = []
     
     for iteration in range(max_iter):
         dfx = df(x)
+        func_calls += 1
         d2fx = d2f(x)
+        func_calls += 1
         
         if abs(d2fx) < 1e-10:
-            return x, f(x), iteration + 1, history
+            raise ValueError("Antroji išvestinė artima nuliui")
         
+        # Niutono formulė: x_{i+1} = x_i - f'(x_i) / f''(x_i)
         x_new = x - dfx / d2fx
         step = abs(x_new - x)
         
+        history.append({...})
+        
         if step < epsilon:
-            return x_new, f(x_new), iteration + 1, history
+            x = x_new
+            f_min = f(x)
+            func_calls += 1
+            return x, f_min, iteration + 1, func_calls, history
         
         x = x_new
     
-    return x, f(x), max_iter, history
+    f_min = f(x)
+    func_calls += 1
+    return x, f_min, max_iter, func_calls, history
 ```
+
+**Grąžina**: `(x_min, f_min, iterations, func_calls, history)`
+
+**Pastaba**: Niutono metode funkcijų skaičiavimams priskiriami $f'(x)$ ir $f''(x)$ įverčiai, nes pats metodas sprendžia $f'(x)=0$. Funkcija $f(x)$ skaičiuojama tik galutinei minimumo reikšmei.
 
 Realizacija: [optimization_methods.py](optimization_methods.py) — funkcija `niutono_metodas`.
 
